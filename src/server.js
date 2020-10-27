@@ -1,24 +1,17 @@
-'use strict';
+"use strict";
 
-
-const express = require('express');
-const mongoose = require('mongoose');
-const base64 = require('base-64');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-
-const userModel = require();
-
+const express = require("express");
+const mongoose = require("mongoose");
+const base64 = require("base-64");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const router = require('./auth/router.js');
+const User = require("./auth/models/users-model.js");
 
 const app = express();
-
 app.use(express.json());
-app.use(express.urlencoded({extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
-app.post('/signup', function(req, res){
-    userModel.create(req.body);
-    then(() => res.status(200).send('created new user'));
-}) .catch((err) => console.log(err));
-
+app.use('/', router);
 
 module.exports = app;
