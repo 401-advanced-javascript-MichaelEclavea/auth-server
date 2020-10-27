@@ -1,49 +1,33 @@
  'use strict';
 
  const mongoose = require('mongoose');
-
+ const base64 = require('base-64');
+ const bcrypt = require('bcrypt');
+ const jwt = require('jsonwebtoken');
  const userSchema = new mongoose.Schema({
-     username: { type: String, required: true },
-     password: { type: String, required: true }
+   username: {
+     type: String,
+   },
+   password: {
+     type: String,
+   }
+ }, { timestamps: true });
+ userSchema.pre('save', async function () {
+   this.password = await bcrypt.hash(this.password, 10);
  });
-
- let newSchema = mongoose.model('users', userSchema);
-
-userSchema.methods.authenticateUser = async function (req, res){
-    let username = req.body.username;
-    let password = req.body.password;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    return { un: username, pw: hashedPassword };
-}
-
- class Model {
-     constructor(schema){
-         this.schema = schema;
-     }
-
-     read(id){
-         if(id) {
-             return this.schema.find({_id: id});
-         }
-         else{
-             return this.schema.find({});
-         }
-     }
-
-     create(object){
-         let newUser = new this.schema(object)
-         console.log(newUser);
-         newUser.authenticateUser()
-         .then((result) => {
-             console.log('saving hashed info', result);
-             hashedInfo.save()
-             console.log('attempting to generating token')
-             this.generateTokens
-         })
-     }
-
-
+ userSchema.statics.authenticateBasic = async function () {
+   return this.findOne({ username })
+     .then(async user => {
+       const isValid = await bcrypt.compare(password, user.password);
+       if (isValid) {
+         const token = await user.generateToken();
+         return token;
+       }
+     });
  }
-
-
+ userSchema.methods.generateToken = async function () {
+   let token = await jwt.sign({ username: this.username }, process.env.SECRET_STRING);
+   return token;
+ }
+ module.exports = mongoose.model('User', userSchema);
 
