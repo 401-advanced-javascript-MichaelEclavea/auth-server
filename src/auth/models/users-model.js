@@ -15,10 +15,12 @@
  userSchema.pre('save', async function () {
    this.password = await bcrypt.hash(this.password, 10);
  });
- userSchema.statics.authenticateBasic = async function () {
+ userSchema.statics.authenticateBasic = async function (username, password) {
    return this.findOne({ username })
-     .then(async user => {
-       const isValid = await bcrypt.compare(password, user.password);
+   .then(async user => {
+   
+     const isValid = await bcrypt.compare(password, user.password);
+     console.log('this is isvalid', isValid);
        if (isValid) {
          const token = await user.generateToken();
          return token;
