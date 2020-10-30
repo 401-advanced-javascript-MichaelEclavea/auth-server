@@ -27,4 +27,33 @@ router.post('/signup', (req, res, next) => {
     .catch(err =>{console.log(err)});
 });
 
+router.get('/oauth', async (req, res, next) => {
+  let code = req.query.code; // oauth gives us a code to make a request for the token
+
+  let tokenURL = 'https://github.com/login/oauth/access_token';
+  let remoteUserURL = 'https://api.github.com/user';
+
+  try {
+
+    // STEP#3 first exchange an access code for an access token
+    const access_token = await exchangeCodeForToken(code);
+
+    // STEP#4 Now that we have the toke, we can use this to get data about the user
+    const userData = await getRemoteUserData(access_token);
+
+    // STEP#5 Using our userData from the AUth Provider, we can create our own User to relate any resources this user creates
+    //  the goal here is to send back a token from this user we created.
+    const token = await createAPIUser(userData);
+
+    res.send(token);
+  } catch (e) {
+    console.log(e);
+
+    res.status(400).send("Something went wrong");
+  }
+
+
+
+
+
 module.exports = router;
